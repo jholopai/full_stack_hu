@@ -22,29 +22,34 @@ const getData = (countries, setCountries) => {
 const App = () => {
   const [countries, setCountries] = useState([]);
   const [filteredCountries, setFilteredCountries] = useState([]);
-  const handleInputChange = (event) => {
-    const filtered = filterItems(countries.data, event.target.value);
-    setFilteredCountries(filtered);
-  };
-  const showCountries = () => {
-    var i = 0;
-    console.log(filteredCountries);
-    if (filteredCountries.length == 1)
-      return <CountryFullView country={filteredCountries[0]} />;
-    if (filteredCountries.length < 10) {
-      return filteredCountries.map((country) => (
-        <CountryTag key={country.id} name={country.name} />
-      ));
-    }
-    if (filteredCountries.length > 9)
-      return <p>Too many matches, specify another filter.</p>;
-  };
+  const [selectedCountry, setSelectedCountry] = useState([]);
   if (countries === undefined || countries.length == 0)
     getData(countries, setCountries);
+  const handleInputChange = (event) => {
+    const filtered = filterItems(countries.data, event.target.value);
+    setSelectedCountry([]);
+    setFilteredCountries(filtered);
+  };
   return (
     <div>
       find countries <input onChange={handleInputChange}></input>
-      {showCountries()}
+      {selectedCountry.length === 0 && (
+        <CountryFullView country={selectedCountry} />
+      )}
+      {filteredCountries.length > 9 && (
+        <p>Too many matches, specify another filter.</p>
+      )}
+      {filteredCountries.length < 10 &&
+        filteredCountries.length > 1 &&
+        filteredCountries.map((country) => (
+          <p>
+            <CountryTag key={country.id} name={country.name} />
+            <button onclick="setSelectedCountry(country)">show</button>
+          </p>
+        ))}
+      {filteredCountries.length === 1 && (
+        <CountryFullView country={filteredCountries[0]} />
+      )}
     </div>
   );
 };

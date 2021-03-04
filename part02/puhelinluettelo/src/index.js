@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import List from "./components/List";
 import Form from "./components/Form";
-import axios from "axios";
+import personsService from "./services/persons";
 
 const App = () => {
   const [searchWith, setSearchWith] = useState("");
@@ -23,18 +23,27 @@ const App = () => {
     const personObject = {
       name: newName,
       number: newNumber,
-      id: newName,
     };
+    console.log(personObject);
     if (persons.find((object) => object.name === newName) === undefined) {
       setPersons(persons.concat(personObject));
+      personsService.create(personObject);
     } else {
-      window.alert("${newName} is already added to phonebook");
+      const foundObject = persons.find((object) => object.name === newName);
+      if (foundObject.number === newNumber)
+        return window.alert(
+          "${foundObject.name} is already added to the phonebook!"
+        );
+      else
+        return window.alert(
+          "${foundObject.name} is already added to the phonebook!"
+        );
     }
     setNewName("");
     setNewNumber("");
   };
   const hook = () => {
-    axios.get("http://localhost:3001/persons").then((response) => {
+    personsService.getAll().then((response) => {
       setPersons(response.data);
     });
   };
@@ -55,7 +64,7 @@ const App = () => {
         />
       </div>
       <h2>Numbers</h2>
-      <List persons={persons} searchWith={searchWith} />
+      <List persons={persons} searchWith={searchWith} setPersons={setPersons} />
     </div>
   );
 };

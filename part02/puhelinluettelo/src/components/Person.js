@@ -1,5 +1,5 @@
 const Person = (props) => (
-  <p>
+  <p key={props.id}>
     {props.name} {props.number}
   </p>
 );

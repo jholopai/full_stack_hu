@@ -2,10 +2,16 @@ import Person from "./Person";
 import personsService from "../services/persons";
 
 const List = (props) => {
-  const deleteAndUpdate = (id) => {
-    const newList = props.persons.filter((person) => person.id !== id);
-    personsService.deletePerson(id);
-    props.setPersons(newList);
+  const deleteAndUpdate = (person) => {
+    if (window.confirm(`Are you sure you want to delete ${person.name}?`)) {
+      const newList = props.persons.filter((p) => p.id !== person.id);
+      personsService.deletePerson(person.id);
+      props.setPersons(newList);
+      props.setErrorMsg(`Deleted ${person.name}'s number succesfully.`);
+      setTimeout(() => {
+        props.setErrorMsg(null);
+      }, 5000);
+    }
   };
   return (
     <div>
@@ -14,12 +20,17 @@ const List = (props) => {
           person.name.toLowerCase().includes(props.searchWith.toLowerCase())
         )
         .map((person) => (
-          <p>
-            <Person {...person} />
-            <button key={person.id} onClick={() => deleteAndUpdate(person.id)}>
+          <div key={person.id} className="personListing">
+            <Person key={person.id} {...person} className="person" />{" "}
+            &nbsp;&nbsp;
+            <button
+              className="button"
+              key={`${person.id}button`}
+              onClick={() => deleteAndUpdate(person)}
+            >
               delete
             </button>
-          </p>
+          </div>
         ))}
     </div>
   );

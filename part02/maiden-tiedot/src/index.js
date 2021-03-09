@@ -15,7 +15,6 @@ const getData = (countries, setCountries) => {
   axios.get("https://restcountries.eu/rest/v2/all").then((response) => {
     setCountries(response);
   });
-  console.log("haettu");
   return countries;
 };
 
@@ -26,25 +25,26 @@ const App = () => {
   if (countries === undefined || countries.length == 0)
     getData(countries, setCountries);
   const handleInputChange = (event) => {
+    setSelectedCountry("");
     const filtered = filterItems(countries.data, event.target.value);
-    setSelectedCountry([]);
     setFilteredCountries(filtered);
   };
   return (
     <div>
       find countries <input onChange={handleInputChange}></input>
-      {selectedCountry.length === 0 && (
+      {selectedCountry.length != 0 && (
         <CountryFullView country={selectedCountry} />
       )}
-      {filteredCountries.length > 9 && (
+      {selectedCountry.length == 0 && filteredCountries.length > 9 && (
         <p>Too many matches, specify another filter.</p>
       )}
-      {filteredCountries.length < 10 &&
+      {selectedCountry.length == 0 &&
+        filteredCountries.length < 10 &&
         filteredCountries.length > 1 &&
         filteredCountries.map((country) => (
           <p>
             <CountryTag key={country.id} name={country.name} />
-            <button onclick="setSelectedCountry(country)">show</button>
+            <button onClick={() => setSelectedCountry(country)}>show</button>
           </p>
         ))}
       {filteredCountries.length === 1 && (

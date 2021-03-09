@@ -1,7 +1,7 @@
 const Person = (props) => (
-  <p key={props.id}>
+  <div key={props.id}>
     {props.name} {props.number}
-  </p>
+  </div>
 );
 
 export default Person;

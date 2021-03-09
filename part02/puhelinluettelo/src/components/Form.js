@@ -2,7 +2,7 @@ const Form = (props) => (
   <form onSubmit={props.addPerson}>
     <div className="row">
       <div className="column" style={{ display: "inline-block" }}>
-        name
+        name:
       </div>
       <div className="column" style={{ display: "inline-block" }}>
         <input value={props.newName} onChange={props.handleNameChange} />
@@ -10,7 +10,7 @@ const Form = (props) => (
     </div>
     <div className="row">
       <div className="column" style={{ display: "inline-block" }}>
-        number
+        number:
       </div>
       <div className="column" style={{ display: "inline-block" }}>
         <input value={props.newNumber} onChange={props.handleNumberChange} />

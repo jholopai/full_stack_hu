@@ -6,7 +6,16 @@ import Notification from "./components/Notification";
 import personsService from "./services/persons";
 import "./index.css";
 
+const notificationHelper = (props) => {
+  props.setErrorMsg(props.message);
+  setTimeout(() => {
+    props.setErrorMsg((errorMsg[0] = null));
+    props.setErrorMsg((errorMsg[1] = false));
+  }, 5000);
+};
+
 const App = () => {
+  const [isError, setIsError] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [searchWith, setSearchWith] = useState("");
   const [persons, setPersons] = useState([]);
@@ -28,11 +37,10 @@ const App = () => {
       number: newNumber,
       id: `${newName}${newNumber}`,
     };
-    if (persons.find((object) => object.name === newName) === undefined) {
+    const person = persons.find((object) => object.name === newName);
+    if (!person) {
       setPersons(persons.concat(personObject));
-      const foo = personsService.create(personObject);
-      console.log(foo);
-      console.log(persons);
+      personsService.create(personObject);
       setErrorMsg(`Added ${personObject.name} to the phonebook.`);
       setTimeout(() => {
         setErrorMsg(null);
@@ -49,8 +57,15 @@ const App = () => {
         newList.find((person) => person.name === personObject.name).number =
           personObject.number;
         setPersons(newList);
-        console.log(foundObject.id);
-        personsService.update(foundObject.id, foundObject);
+        personsService.update(foundObject.id, foundObject).catch((error) => {
+          setIsError(true);
+          setErrorMsg(`${foundObject.name} has already been removed!`);
+          setTimeout(() => {
+            setErrorMsg(null);
+            setIsError(false);
+          }, 5000);
+          setPersons(persons.filter((person) => person.id !== foundObject.id));
+        });
         setErrorMsg(`Changed ${foundObject.name}'s number succesfully.`);
         setTimeout(() => {
           setErrorMsg(null);
@@ -69,7 +84,11 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={errorMsg} />
+      <Notification
+        message={errorMsg}
+        isError={isError}
+        setErrorMsg={setErrorMsg}
+      />
       filter shown with{" "}
       <input value={searchWith} onChange={handleSearchChange} />
       <div>

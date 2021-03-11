@@ -1,5 +1,5 @@
 const Form = (props) => (
-  <form onSubmit={props.addPerson}>
+  <form onSubmit={props.handleFormSubmit}>
     <div className="row">
       <div className="column" style={{ display: "inline-block" }}>
         name:

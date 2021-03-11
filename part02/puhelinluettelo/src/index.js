@@ -6,17 +6,9 @@ import Notification from "./components/Notification";
 import personsService from "./services/persons";
 import "./index.css";
 
-const notificationHelper = (props) => {
-  props.setErrorMsg(props.message);
-  setTimeout(() => {
-    props.setErrorMsg((errorMsg[0] = null));
-    props.setErrorMsg((errorMsg[1] = false));
-  }, 5000);
-};
-
 const App = () => {
-  const [isError, setIsError] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [isError, setIsError] = useState(false);
   const [searchWith, setSearchWith] = useState("");
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState([]);
@@ -30,7 +22,30 @@ const App = () => {
   const handleSearchChange = (event) => {
     setSearchWith(event.target.value);
   };
-  const addPerson = (event) => {
+  const notificationHelper = (message) => {
+    setErrorMsg(`${message}`);
+    setTimeout(() => {
+      setErrorMsg(null);
+    }, 5000);
+  };
+  const addPerson = (personObject) => {
+    setPersons(persons.concat(personObject));
+    personsService.create(personObject);
+    notificationHelper(`Added ${personObject.name} to the phonebook.`);
+  };
+  const updatePerson = (personObject) => {
+    const newList = persons;
+    newList.find((person) => person.name === personObject.name).number =
+      personObject.number;
+    setPersons(newList);
+    personsService.update(personObject.id, personObject).catch((error) => {
+      setIsError(true);
+      notificationHelper(`${personObject.name} has already been removed!`);
+      setPersons(persons.filter((person) => person.id !== personObject.id));
+    });
+    notificationHelper(`Changed ${personObject.name}'s number succesfully.`);
+  };
+  const handleFormSubmit = (event) => {
     event.preventDefault();
     const personObject = {
       name: newName,
@@ -39,37 +54,18 @@ const App = () => {
     };
     const person = persons.find((object) => object.name === newName);
     if (!person) {
-      setPersons(persons.concat(personObject));
-      personsService.create(personObject);
-      setErrorMsg(`Added ${personObject.name} to the phonebook.`);
-      setTimeout(() => {
-        setErrorMsg(null);
-      }, 5000);
+      addPerson(personObject);
     } else {
-      const foundObject = persons.find((object) => object.name === newName);
-      if (foundObject.number === newNumber) {
+      if (person.number === newNumber) {
+        notificationHelper(
+          `${person.name} has already been added with that number!`
+        );
       } else if (
         window.confirm(
-          `Are you sure you want to change the number for ${foundObject.name}?`
+          `Are you sure you want to change the number for ${person.name}?`
         )
       ) {
-        const newList = persons;
-        newList.find((person) => person.name === personObject.name).number =
-          personObject.number;
-        setPersons(newList);
-        personsService.update(foundObject.id, foundObject).catch((error) => {
-          setIsError(true);
-          setErrorMsg(`${foundObject.name} has already been removed!`);
-          setTimeout(() => {
-            setErrorMsg(null);
-            setIsError(false);
-          }, 5000);
-          setPersons(persons.filter((person) => person.id !== foundObject.id));
-        });
-        setErrorMsg(`Changed ${foundObject.name}'s number succesfully.`);
-        setTimeout(() => {
-          setErrorMsg(null);
-        }, 5000);
+        updatePerson(person);
       }
     }
     setNewName("");
@@ -84,11 +80,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification
-        message={errorMsg}
-        isError={isError}
-        setErrorMsg={setErrorMsg}
-      />
+      <Notification message={errorMsg} isError={isError} />
       filter shown with{" "}
       <input value={searchWith} onChange={handleSearchChange} />
       <div>
@@ -96,7 +88,7 @@ const App = () => {
         <Form
           newName={newName}
           newNumber={newNumber}
-          addPerson={addPerson}
+          handleFormSubmit={handleFormSubmit}
           handleNameChange={handleNameChange}
           handleNumberChange={handleNumberChange}
         />

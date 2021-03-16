@@ -7,10 +7,10 @@ const List = (props) => {
       const newList = props.persons.filter((p) => p.id !== person.id);
       personsService.deletePerson(person.id);
       props.setPersons(newList);
-      props.setErrorMsg(`Deleted ${person.name}'s number succesfully.`);
-      setTimeout(() => {
-        props.setErrorMsg(null);
-      }, 5000);
+      props.notificationHelper(
+        `Deleted ${person.name}'s number succesfully.`,
+        "green"
+      );
     }
   };
   return (

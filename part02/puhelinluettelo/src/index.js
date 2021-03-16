@@ -7,8 +7,10 @@ import personsService from "./services/persons";
 import "./index.css";
 
 const App = () => {
-  const [errorMsg, setErrorMsg] = useState(null);
-  const [isError, setIsError] = useState(false);
+  const [notificationMsg, setNotificationMsg] = useState({
+    notification: null,
+    notificationType: "green",
+  });
   const [searchWith, setSearchWith] = useState("");
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState([]);
@@ -22,28 +24,42 @@ const App = () => {
   const handleSearchChange = (event) => {
     setSearchWith(event.target.value);
   };
-  const notificationHelper = (message) => {
-    setErrorMsg(`${message}`);
+  const notificationHelper = (message, color) => {
+    setNotificationMsg({
+      notification: `${message}`,
+      notificationType: `${color}`,
+    });
     setTimeout(() => {
-      setErrorMsg(null);
+      setNotificationMsg({ notification: null });
+      setNotificationMsg({ notificationType: "green" });
     }, 5000);
   };
   const addPerson = (personObject) => {
     setPersons(persons.concat(personObject));
     personsService.create(personObject);
-    notificationHelper(`Added ${personObject.name} to the phonebook.`);
+    notificationHelper(`Added ${personObject.name} to the phonebook.`, "green");
   };
   const updatePerson = (personObject) => {
-    const newList = persons;
-    newList.find((person) => person.name === personObject.name).number =
-      personObject.number;
+    const newList = persons.map((person) => {
+      if (person.id === personObject.id) {
+        const updatedPerson = { ...personObject, number: newNumber };
+        return updatedPerson;
+      }
+      return person;
+    });
     setPersons(newList);
     personsService.update(personObject.id, personObject).catch((error) => {
-      setIsError(true);
-      notificationHelper(`${personObject.name} has already been removed!`);
+      setNotificationMsg({ notificationType: "red" });
+      notificationHelper(
+        `${personObject.name} has already been removed!`,
+        "red"
+      );
       setPersons(persons.filter((person) => person.id !== personObject.id));
     });
-    notificationHelper(`Changed ${personObject.name}'s number succesfully.`);
+    notificationHelper(
+      `Changed ${personObject.name}'s number succesfully.`,
+      "green"
+    );
   };
   const handleFormSubmit = (event) => {
     event.preventDefault();
@@ -58,7 +74,8 @@ const App = () => {
     } else {
       if (person.number === newNumber) {
         notificationHelper(
-          `${person.name} has already been added with that number!`
+          `${person.name} has already been added with that number!`,
+          "red"
         );
       } else if (
         window.confirm(
@@ -80,7 +97,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={errorMsg} isError={isError} />
+      <Notification notificationMsg={notificationMsg} />
       filter shown with{" "}
       <input value={searchWith} onChange={handleSearchChange} />
       <div>
@@ -98,7 +115,7 @@ const App = () => {
         persons={persons}
         searchWith={searchWith}
         setPersons={setPersons}
-        setErrorMsg={setErrorMsg}
+        notificationHelper={notificationHelper}
       />
     </div>
   );
